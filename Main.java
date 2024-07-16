@@ -9,6 +9,7 @@ public class Main {
         int ch = 0;
         book.initMasterList();
         while(ch != 4){
+            System.out.println("-------------------------------------------------");
             System.out.println("1.Book Ticket \n2.Cancel Ticket \n3.Print Chart\n");
             System.out.println("Enter Choice");
             ch = sc.nextInt();

@@ -28,28 +28,13 @@ public class Book {
     int getTotalSeats(){
         return totalSeats;
     }
-    void printTicket(Ticket ticket){
 
-        if(ticket.status == -1){
-            System.out.println("Ticket Not Available");
-            return;
-        }
-        System.out.println("Ticket Booked");
-        System.out.println("PNR: " + ticket.PNR);
-        System.out.println("From: " + ticket.From + "\n" + "To: " + ticket.To);
-        for(Integer seat : ticket.seats) System.out.print(seat + " ");
-        System.out.println();
-        int status = ticket.status;
-        if(status == 1){
-            System.out.println("Status: CNF");
-        } else {
-            System.out.println("Status: WL");
-        }
-    }
+    //Methods Related to Booking Ticket starts Here
     void book(Ticket ticket){
 
         //Enters this method if only CNF/WL Available
-        ArrayList<Integer> st = new ArrayList<>();
+        HashSet<Integer> alloted = new HashSet<>();
+
         int status = ticket.status;
         if(status == 1) {
             Character From = ticket.From, To = ticket.To;
@@ -63,13 +48,15 @@ public class Book {
                     for(int i = 0; seatsRequired > 0 && i < totalSeats; i++){
                         if(curStation[i] == 0){
                             --seatsRequired;
+                            //We need the seats to be started at 1, so i + 1
                             curStation[i] = i + 1;
-                            st.add(i + 1);
+                            alloted.add(i + 1);
                         }
                     }
                 }
             }
-            ticket.seats = st;
+
+            ticket.seats = new ArrayList<>(alloted);
             ticket.PNR = ++PNR;
             CNF.add(ticket);
         } else{
@@ -87,17 +74,19 @@ public class Book {
         for(Character station : masterList.keySet()){
             if(station == To) break;
             //We need to Check for every valid station
-            int emptySeats = 0;
+            //Station within bounds
             if(station >= From && station < To){
+                //For each station check empty seats are available
+                int emptySeats = 0;
                 int[] curStation = masterList.get(station);
                 for(int i : curStation){
                     if(i == 0) emptySeats++;
                 }
-            }
-            //If the no of seats < required go check for WL instead of CNF
-            if(emptySeats < seatsRequired){
-                cnfrm = false;
-                break;
+                //If the no of seats < required go check for WL instead of CNF
+                if(emptySeats < seatsRequired){
+                    cnfrm = false;
+                    break;
+                }
             }
         }
         //Check WL and if ticket is already in WL(while checking) dont add in WL
@@ -108,7 +97,7 @@ public class Book {
                 printTicket(ticket);
                 return;
             }
-            System.out.println(WL);
+//            System.out.println(WL);
             int wlSeats = 0;
             //Check if WL Queue if Full
             for(Ticket t : WL){
@@ -130,8 +119,10 @@ public class Book {
         //If CNF available book
         else if(cnfrm) {
             //If ticket is already in WL remove from WL
-            if(ticket.status == 2)
+            if(ticket.status == 2) {
                 WL.remove(ticket);
+                System.out.println("Ticket Moved From WL");
+            }
             ticket.status = 1;
             book(ticket);
             printTicket(ticket);
@@ -141,8 +132,8 @@ public class Book {
     //Methods Related to Booking Ticket ends Here
     //----------------------------------------------------------
 
+    //Methods Related to Cancel Ticket starts here ----->
     void updateWaitingList(){
-
         for(Ticket t : WL){
             checkAvailabilty(t);
         }
@@ -150,24 +141,32 @@ public class Book {
     void removeFromMasterList(Ticket ticket, int noOfTickets){
         Character From = ticket.From, To = ticket.To;
         ArrayList<Integer> arr = ticket.seats;
+        HashSet<Integer> cancelled = new HashSet<>();
         //Iterate and get seats to be cancelled
         for(Character k : masterList.keySet()){
             if(k == To) break;
             if(k >= From && k < To){
+                int seats = noOfTickets;
                 int[] cur = masterList.get(k);
                 //Iterate the seats in ticket and cancel noOfTickets from MasterList
-                for(int i = 0; noOfTickets > 0 && i < arr.size(); i++){
-                    --noOfTickets;
-                    cur[arr.get(i)] = 0;
-                    //Remove from the ticket too.
-                    arr.remove(i);
+                for(int i = 0; seats > 0 && i < arr.size(); i++){
+                    --seats;
+                    //In array the element is stored in (element - 1) index
+                    cur[arr.get(i) - 1] = 0;
+                    //Remove from the ticket too for this add in a seat to avoid duplciation.
+                    cancelled.add(arr.get(i));
                 }
             }
         }
+        System.out.println("Cancelled Tickets: "  + cancelled);
+        System.out.println("-------------------------------------------------");
+        //Remove seats from ticket too.
+        for(Integer i: cancelled) arr.remove(i);
+        //Update new tickets after removal of tickets.
         ticket.seats = arr;
+        //Update the ticket in CNF after removal of tickets.
         CNF.remove(ticket);
         CNF.add(ticket);
-        updateWaitingList();
     }
     void identifyAndCancel(int cancelPNR, int tickets){
         Ticket cancel = null;
@@ -180,9 +179,12 @@ public class Book {
         }
         //If the ticket is confirmed, Cancel from CNF and MasterList
         if(cancel != null){
-            removeFromMasterList(cancel,tickets);
-            System.out.println(cancel.seats);
+            System.out.println("Your Seats Before Cancellation: " + cancel.seats);
             System.out.println("Ticket Cancelled Successfully");
+            //If ticket is CNF remove from Map(MasterList)
+            removeFromMasterList(cancel,tickets);
+            //If any tickets in WL matches the number of seats available move to CNF(FIFO Order)
+            updateWaitingList();
             return;
         }
         //Ticket is in WL
@@ -210,6 +212,11 @@ public class Book {
         System.out.println("Ticket Cancelled Successfully(WL Tickets)");
 
     }
+    //Methods Related to Cancel ends here -----
+    //----------------------------------------
+
+    //Methods Related to User Interaction starts here
+
     //Ticket Cancel Details
     void getCancelDetails(){
         //Get PNR to identify Ticket to be cancelled
@@ -230,4 +237,28 @@ public class Book {
         Ticket check = new Ticket(From,To,noOfSeats);
         checkAvailabilty(check);
     }
+
+    void printTicket(Ticket ticket){
+
+        if(ticket.status == -1){
+            System.out.println("Ticket Not Available");
+            return;
+        }
+        System.out.println("Ticket Booked");
+        System.out.println("PNR: " + ticket.PNR);
+        System.out.println("From: " + ticket.From + "\n" + "To: " + ticket.To);
+        for(Integer seat : ticket.seats) System.out.print(seat + " ");
+        System.out.println();
+        int status = ticket.status;
+        if(status == 1){
+            System.out.println("Status: CNF");
+            System.out.println("-------------------------------------------------");
+        } else {
+            System.out.println("Status: WL");
+            System.out.println("-------------------------------------------------");
+        }
+    }
+
+    //Methods Related to User Interaction starts here
+    //----------------------------------------------
 }
