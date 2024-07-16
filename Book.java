@@ -3,7 +3,6 @@ import java.util.*;
 public class Book {
     static int PNR = 0;
     static HashMap<Character,int[]> masterList = new HashMap<>();
-    //8 + 1 => (8 - 8 = 0) 0 seats available => 9
     static int totalStations = 5;
     static int totalSeats = 8;
     static int totalWL = 2;
@@ -29,7 +28,7 @@ public class Book {
         return totalSeats;
     }
 
-    //Methods Related to Booking Ticket starts Here
+    //Methods Related to Booking Ticket starts Here --->
     void book(Ticket ticket){
 
         //Enters this method if only CNF/WL Available
