@@ -1,13 +1,13 @@
 import java.util.*;
 
 public class Chart {
-    Book book = new Book();
+    Train train = new Train();
     void printChart(){
-        HashMap<Character,int[]> masterList = book.getMasterList();
+        HashMap<Character,int[]> masterList = train.getMasterList();
 
-        char[][] chart = new char[book.getTotalSeats()][book.getTotalStations() + 1];
+        char[][] chart = new char[train.getTotalSeats()][train.getTotalStations() + 1];
         char startRow = 'A', startCol = '1';
-        char[] stations = new char[book.getTotalStations() + 1];
+        char[] stations = new char[train.getTotalStations() + 1];
 
         for(int i = 1; i < stations.length; i++) stations[i] = startRow++;
         for(int i = 0; i < chart.length; i++) chart[i][0] = startCol++;

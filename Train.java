@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Book {
+public class Train {
     static int PNR = 0;
     static HashMap<Character,int[]> masterList = new HashMap<>();
     static int totalStations = 5;
@@ -46,12 +46,16 @@ public class Book {
                     //Iterate the array fill empty sets
                     for(int i = 0; seatsRequired > 0 && i < totalSeats; i++){
                         if(curStation[i] == 0){
+                            System.out.print(i + " ");
                             --seatsRequired;
                             //We need the seats to be started at 1, so i + 1
                             curStation[i] = i + 1;
                             alloted.add(i + 1);
                         }
                     }
+                    System.out.println();
+
+                    masterList.put(station,curStation);
                 }
             }
 
@@ -155,14 +159,17 @@ public class Book {
                     //Remove from the ticket too for this add in a seat to avoid duplciation.
                     cancelled.add(arr.get(i));
                 }
+                //Update the seats in masterList
+                masterList.put(k,cur);
             }
         }
-        System.out.println("Cancelled Tickets: "  + cancelled);
+        System.out.println("Cancelled Seats: "  + cancelled);
         System.out.println("-------------------------------------------------");
         //Remove seats from ticket too.
         for(Integer i: cancelled) arr.remove(i);
         //Update new tickets after removal of tickets.
         ticket.seats = arr;
+        System.out.println("New Seats: "  + ticket.seats);
         //Update the ticket in CNF after removal of tickets.
         CNF.remove(ticket);
         CNF.add(ticket);
@@ -214,7 +221,7 @@ public class Book {
     //Methods Related to Cancel ends here -----
     //----------------------------------------
 
-    //Methods Related to User Interaction starts here
+    //Methods Related to User Interaction starts here-->
 
     //Ticket Cancel Details
     void getCancelDetails(){
@@ -258,6 +265,6 @@ public class Book {
         }
     }
 
-    //Methods Related to User Interaction starts here
+    //Methods Related to User Interaction ends here
     //----------------------------------------------
 }
